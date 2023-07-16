@@ -1,0 +1,98 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id          String        @id @default(uuid())
+  name        String
+  description String
+  price       Float
+  slug        String
+  imageUrl    String
+  createdAt   DateTime      @default(now())
+  updateAt    DateTime      @default(now()) @updatedAt
+  UserCart    UserCart[]
+  OrderDetail OrderDetail[]
+
+  @@map("Products")
+}
+
+model User {
+  id        String     @id @default(uuid())
+  name      String
+  email     String
+  password  String
+  UserCart  UserCart[]
+  createdAt DateTime   @default(now())
+  Order     Order[]
+  Invoice   Invoice[]
+  role      String     @default("user")
+
+  @@map("Users")
+}
+
+model UserCart {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  product   Product  @relation(fields: [productId], references: [id])
+  productId String
+  createdAt DateTime @default(now())
+  quantity  Int      @default(1)
+
+  @@map("UserCarts")
+}
+
+model OrderDetail {
+  id String @id @default(uuid())
+
+  order   Order?  @relation(fields: [orderId], references: [id])
+  orderId String?
+
+  total     Float
+  quantity  Int      @default(1)
+  productId String
+  product   Product? @relation(fields: [productId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@map("OrderCarts")
+}
+
+model Order {
+  id String @id @default(uuid())
+
+  user         User          @relation(fields: [userId], references: [id])
+  userId       String
+  total        Float
+  orderDetails OrderDetail[]
+  createdAt    DateTime      @default(now())
+  Invoice      Invoice?
+
+  @@map("Orders")
+}
+
+model Invoice {
+  id                String   @id @default(uuid())
+  user              User     @relation(fields: [userId], references: [id])
+  userId            String
+  order             Order    @relation(fields: [orderId], references: [id])
+  externalReference String
+  email             String
+  cpf               String
+  firstName         String
+  phone             String
+  surname           String
+  status            String?
+  ipv4              String?
+  paymentMethod     String?
+  orderId           String   @unique
+  createdAt         DateTime @default(now())
+
+  @@map("Invoices")
+}

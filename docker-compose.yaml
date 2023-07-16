@@ -1,0 +1,14 @@
+version: '3'
+services:
+  db:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '3306:3306'
+    volumes:
+      - ./mysql/db.sql:/docker-entrypoint-initdb.d/db.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
